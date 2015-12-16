@@ -1,0 +1,13 @@
+<resources>
+	<string name="app_name">YaDiskSlideShow</string>
+	<string name="no_files">No files</string>
+	<string name="auth_title">Auth</string>
+	<string name="auth_message">Start browser to authorize?</string>
+	<string name="auth_positive_button">OK</string>
+	<string name="auth_negative_button">Exit</string>
+	<string name="context_menu_slideshow">Run slideshow</string>
+	<string name="loading_file_chooser_title">Open file</string>
+	<string name="loading_file_cancel_button">Cancel</string>
+	<string name="loading_file_title">Loading file</string>
+	<string name="loading_file_message">Loading...</string>
+</resources>

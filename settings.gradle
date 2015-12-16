@@ -1,0 +1,3 @@
+rootProject.name = 'Slideshow'
+include ':yandex-disk-sdk', ':YaDiskSlideShow'
+
