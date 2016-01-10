@@ -1,14 +1,11 @@
 package ru.cfif.cs.android.slideshow;
 
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
 import android.content.*;
-import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.support.v4.app.ListFragment;
 import android.support.v4.app.LoaderManager;
@@ -25,7 +22,10 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 
 	private static final String ROOT = "/";
 	static final String IMAGE_MEDIA_TYPE = "image";
-	public static final int SLIDESHOW_DELAY = 3 * 1000;
+
+	static final String LIST_KEY = "listImagesKey";
+	static final String CREDENTIALS_KEY = "CredentialsKey";
+	static final String START_ITEM_KEY = "StartItemKey";
 
 	private Credentials credentials;
 	private String currentDir;
@@ -33,7 +33,6 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 	private final ArrayList<ListItem> images = new ArrayList<>();
 
 	private SimpleListAdapter adapter;
-	DownloadFilesDialogFragment downloadFragment;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
@@ -73,23 +72,25 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		if (getListItem(menuInfo).isCollection() || !getListItem(menuInfo).getMediaType().equals(IMAGE_MEDIA_TYPE))
+		ListItem item = images.get(getImagesId(menuInfo));
+		if (item.isCollection() || !item.getMediaType().equals(IMAGE_MEDIA_TYPE))
 			return;
 
-		menu.setHeaderTitle(getListItem(menuInfo).getDisplayName());
+		menu.setHeaderTitle(item.getDisplayName());
 		MenuInflater inflater = getActivity().getMenuInflater();
 		inflater.inflate(R.menu.example_context_menu, menu);
 	}
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		ListItem listItem = getListItem(item.getMenuInfo());
+		int imagesId = getImagesId(item.getMenuInfo());
 		switch (item.getItemId()) {
 		case R.id.context_slideshow:
-			System.out.println("onContextItemSelected: publish: listItem=" + listItem);
 
-			if (!images.isEmpty())
-				runSlideShow(listItem);
+			if (!images.isEmpty()) {
+				System.out.println("onContextItemSelected: publish: listItem=" + images.get(imagesId));
+				runSlideShow(imagesId);
+			}
 
 			return true;
 		default:
@@ -97,33 +98,18 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 		}
 	}
 
-	private void runSlideShow(ListItem item) {
-		if (downloadFragment == null)
-			downloadFragment = DownloadFilesDialogFragment.newInstance(getActivity(), credentials, images, item);
-		Handler handler = new Handler() {
-			public void handleMessage(android.os.Message msg) {
-				System.out.println("---------------- 1)" + msg);
-				switch (msg.what) {
-				case 1:
-					System.out.println("---------------- 1)" + msg);
-					File file = (File)msg.obj;
-					file.setReadable(true, false);
-					Intent intent = new Intent();
-					intent.setAction(Intent.ACTION_VIEW);
-					intent.setDataAndType(Uri.fromFile(file), "Image");
-					startActivity(Intent.createChooser(intent, ""));
-					break;
-				default:
-					System.out.println("---------------- def)" + msg);
-				}
-			}
-		};
-		downloadFragment.slideshow(item, handler, SLIDESHOW_DELAY);
+	private void runSlideShow(final int imagesId) {
+		Intent intent = new Intent(getContext(), SlideShowActivity.class);
+//		intent.setAction(Intent.ACTION_VIEW);
+		intent.putExtra(CREDENTIALS_KEY, credentials);
+		intent.putParcelableArrayListExtra(LIST_KEY, images);
+		intent.putExtra(START_ITEM_KEY, imagesId);
+		startActivity(intent);
 	}
 
-	private ListItem getListItem(ContextMenu.ContextMenuInfo menuInfo) {
+	private int getImagesId(ContextMenu.ContextMenuInfo menuInfo) {
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-		return (ListItem)getListAdapter().getItem(info.position);
+		return info.position;
 	}
 
 	@Override

@@ -38,9 +38,11 @@ public class SimpleListLoader extends AsyncTaskLoader<List<ListItem>> {
 				return 1;
 			} else if (f2.isCollection() && f1.isCollection()) {
 				return collator.compare(f1.getDisplayName(), f2.getDisplayName());
-			} else if (f1.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE) && !f2.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)) {
+			} else if (f1.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)
+				&& !f2.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)) {
 				return -1;
-			} else if (f2.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE) && !f1.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)) {
+			} else if (f2.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)
+				&& !f1.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE)) {
 				return 1;
 			} else {
 				return collator.compare(f1.getDisplayName(), f2.getDisplayName());
@@ -103,8 +105,11 @@ public class SimpleListLoader extends AsyncTaskLoader<List<ListItem>> {
 						ignoreFirstItem = false;
 						return false;
 					} else {
-						if (item != null && !item.isCollection() && item.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE))
+						if (item != null && !item.isCollection()
+							&& item.getMediaType().equals(SimpleList.IMAGE_MEDIA_TYPE))
+						{
 							images.add(item);
+						}
 						fileItemList.add(item);
 						return true;
 					}

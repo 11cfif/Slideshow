@@ -179,6 +179,7 @@ public class MainActivity extends FragmentActivity {
 			super();
 		}
 
+		@SuppressWarnings("NullableProblems")
 		@Override
 		public Dialog onCreateDialog(Bundle savedInstanceState) {
 			return new AlertDialog.Builder(getActivity())
