@@ -9,6 +9,7 @@
 			android:name="ru.cfif.cs.android.slideshow.ImageFragment"
 			android:layout_width="match_parent"
 			android:layout_height="wrap_content"
-			android:layout_gravity="center_horizontal" />
+			android:layout_gravity="center_vertical"
+			android:layout_centerVertical="true" android:layout_alignParentStart="true"/>
 
 </RelativeLayout>

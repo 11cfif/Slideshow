@@ -1,7 +1,6 @@
 package ru.cfif.cs.android.slideshow;
 
 import java.io.File;
-import java.util.ArrayList;
 
 import android.app.Activity;
 import android.content.Intent;
@@ -12,7 +11,7 @@ import com.yandex.disk.client.ListItem;
 
 public class SlideShowActivity extends Activity {
 
-	public static final int SLIDESHOW_DELAY = 3 * 1000;
+	public static final int SLIDESHOW_DELAY = 5 * 1000;
 	DownloadManager downloadManager;
 
 	private SlideshowThread slideshowThread;
@@ -22,9 +21,10 @@ public class SlideShowActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_slide_show);
+		ImageFragment fragment = new ImageFragment();
 		getFragmentManager()
 			.beginTransaction()
-			.add(R.id.fragment, new ImageFragment())
+			.add(R.id.fragment, fragment)
 			.commit();
 		Intent intent = getIntent();
 		downloadManager = new DownloadManager(intent.<ListItem>getParcelableArrayListExtra(SimpleList.LIST_KEY));
@@ -41,33 +41,28 @@ public class SlideShowActivity extends Activity {
 
 	public void startSlideshow(int startIndex, Credentials credentials) {
 		downloadManager.loadFiles(startIndex, credentials, this);
-		Handler handler = new Handler() {
-			public void handleMessage(android.os.Message msg) {
-				System.out.println("---------------- 1)" + msg);
-				switch (msg.what) {
-				case 1:
-					System.out.println("---------------- 1)" + msg);
-					File file = (File)msg.obj;
-					file.setReadable(true, false);
-					if (stop)
-						return;
-					getFragmentManager()
-						.beginTransaction()
-						.replace(R.id.fragment, ImageFragment.newInstance(Uri.fromFile(file)))
-						.commit();
-					break;
-				default:
-					System.out.println("---------------- def)" + msg);
-				}
-			}
-		};
+		Handler handler = new SlideHandler();
 		slideshowThread = new SlideshowThread(handler);
 		slideshowThread.start();
 	}
 
-
-	public void setImageItemList(ArrayList<ListItem> imageItemList) {
-		downloadManager = new DownloadManager(imageItemList);
+	class SlideHandler extends Handler {
+		public void handleMessage(android.os.Message msg) {
+			switch (msg.what) {
+			case 1:
+				File file = (File)msg.obj;
+				file.setReadable(true, false);
+				if (stop)
+					return;
+				getFragmentManager()
+					.beginTransaction()
+					.replace(R.id.fragment, ImageFragment.newInstance(Uri.fromFile(file)))
+					.commit();
+				break;
+			default:
+				throw new AssertionError();
+			}
+		}
 	}
 
 	class SlideshowThread extends Thread {
@@ -92,7 +87,7 @@ public class SlideShowActivity extends Activity {
 						break;
 					}
 				}
-				while (downloadManager.getImageAtAbsoluteIndex(i) != null) {
+				while (downloadManager.getImageAtAbsoluteIndex(i) == null) {
 					try {
 						Thread.sleep(10);
 					} catch (InterruptedException e) {
@@ -102,8 +97,8 @@ public class SlideShowActivity extends Activity {
 
 				if (cancelled)
 					break;
-				System.out.println("Send");
-				message = handler.obtainMessage(1, downloadManager.getImageAtAbsoluteIndex(i++));
+				File image = downloadManager.getImageAtAbsoluteIndex(i++);
+				message = handler.obtainMessage(1, image);
 				handler.sendMessage(message);
 				lastSendTime = System.currentTimeMillis();
 			}

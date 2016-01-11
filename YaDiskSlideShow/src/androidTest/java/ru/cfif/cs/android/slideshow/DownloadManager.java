@@ -22,6 +22,9 @@ public class DownloadManager {
 	public DownloadManager(ArrayList<ListItem> imageItemList) {
 		this.imageItemList = imageItemList;
 		this.images = new ArrayList<>(imageItemList.size());
+		for (int i = 0; i < imageItemList.size(); i++) {
+			images.add(null);
+		}
 	}
 
 	public void loadFiles(final int startIndex, final Credentials credentials, final Context context) {
@@ -36,7 +39,7 @@ public class DownloadManager {
 					for (int i = 0; i < imageItemList.size(); curIndex = getCurIndex(i++)) {
 						if (stop)
 							break;
-						images.add(new File(context.getFilesDir(),
+						images.add(curIndex, new File(context.getFilesDir(),
 							new File(imageItemList.get(curIndex).getFullPath()).getName()));
 						client.downloadFile(imageItemList.get(curIndex).getFullPath(), images.get(curIndex),
 							new ProgressListener() {
@@ -54,7 +57,6 @@ public class DownloadManager {
 					}
 				} catch (IOException | WebdavException ex) {
 					Log.d(TAG, "loadFile", ex);
-//					sendException(ex);
 				} finally {
 					if (client != null) {
 						client.shutdown();

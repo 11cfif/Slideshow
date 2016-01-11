@@ -30,20 +30,16 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 	private Credentials credentials;
 	private String currentDir;
 
-	private final ArrayList<ListItem> images = new ArrayList<>();
+	private final ArrayList<ListItem> items = new ArrayList<>();
 
 	private SimpleListAdapter adapter;
 
 	@Override
 	public void onActivityCreated(Bundle savedInstanceState) {
 		super.onActivityCreated(savedInstanceState);
-
 		setDefaultEmptyText();
-
 		setHasOptionsMenu(true);
-
 		registerForContextMenu(getListView());
-
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
 		String username = preferences.getString(MainActivity.USERNAME, null);
 		String token = preferences.getString(MainActivity.TOKEN, null);
@@ -72,7 +68,7 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 	@Override
 	public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
 		super.onCreateContextMenu(menu, v, menuInfo);
-		ListItem item = images.get(getImagesId(menuInfo));
+		ListItem item = getItems(menuInfo);
 		if (item.isCollection() || !item.getMediaType().equals(IMAGE_MEDIA_TYPE))
 			return;
 
@@ -83,15 +79,12 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 
 	@Override
 	public boolean onContextItemSelected(MenuItem item) {
-		int imagesId = getImagesId(item.getMenuInfo());
+		ListItem listItem = getItems(item.getMenuInfo());
+		int imageId = items.indexOf(listItem);
 		switch (item.getItemId()) {
 		case R.id.context_slideshow:
-
-			if (!images.isEmpty()) {
-				System.out.println("onContextItemSelected: publish: listItem=" + images.get(imagesId));
-				runSlideShow(imagesId);
-			}
-
+			if (!this.items.isEmpty())
+				runSlideShow(imageId);
 			return true;
 		default:
 			return super.onContextItemSelected(item);
@@ -100,16 +93,15 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 
 	private void runSlideShow(final int imagesId) {
 		Intent intent = new Intent(getContext(), SlideShowActivity.class);
-//		intent.setAction(Intent.ACTION_VIEW);
 		intent.putExtra(CREDENTIALS_KEY, credentials);
-		intent.putParcelableArrayListExtra(LIST_KEY, images);
+		intent.putParcelableArrayListExtra(LIST_KEY, items);
 		intent.putExtra(START_ITEM_KEY, imagesId);
 		startActivity(intent);
 	}
 
-	private int getImagesId(ContextMenu.ContextMenuInfo menuInfo) {
+	private ListItem getItems(ContextMenu.ContextMenuInfo menuInfo) {
 		AdapterView.AdapterContextMenuInfo info = (AdapterView.AdapterContextMenuInfo)menuInfo;
-		return info.position;
+		return (ListItem)getListAdapter().getItem(info.position);
 	}
 
 	@Override
@@ -132,7 +124,7 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 				setDefaultEmptyText();
 			}
 		} else {
-			images.addAll(((SimpleListLoader)loader).getImages());
+			items.addAll(((SimpleListLoader)loader).getImages());
 			adapter.setData(data);
 		}
 	}
@@ -140,7 +132,7 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 	@Override
 	public void onLoaderReset(Loader<List<ListItem>> loader) {
 		adapter.setData(null);
-		images.clear();
+		items.clear();
 	}
 
 	@Override
@@ -149,8 +141,6 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 		System.out.println("onListItemClick(): " + item);
 		if (item.isCollection()) {
 			changeDir(item.getFullPath());
-		} else {
-//			downloadFile(item);
 		}
 	}
 
@@ -165,10 +155,6 @@ public class SimpleList extends ListFragment implements LoaderManager.LoaderCall
 			.addToBackStack(null)
 			.commit();
 	}
-
-//	private void downloadFile(ListItem item) {
-//		DownloadFilesDialogFragment.newInstance(credentials, images, new ArrayList<>(Arrays.asList(item))).show(getFragmentManager(), "download");
-//	}
 
 	private void setDefaultEmptyText() {
 		setEmptyText(getString(R.string.no_files));

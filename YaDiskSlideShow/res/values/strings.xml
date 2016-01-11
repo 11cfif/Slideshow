@@ -9,10 +9,7 @@
 	<string name="loading_file_chooser_title">Open file</string>
 	<string name="loading_file_cancel_button">Cancel</string>
 	<string name="loading_file_title">Loading file</string>
-	<string name="loading_file_message">Loading...</string>
 
-<!-- TODO: Remove or change this placeholder text -->
-	<string name="hello_blank_fragment">Hello blank fragment</string>
 	<string name="title_activity_slide_show">SlideShowActivity</string>
 
 	<string name="hello_world">Hello world!</string>
